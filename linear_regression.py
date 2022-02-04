@@ -1,4 +1,4 @@
-########## >>>>>> Put your full name and 6-digit EWU ID here. 
+########## Blake Chalpin 00864973
 
 
 # Implementation of the linear regression with L2 regularization.
@@ -40,8 +40,6 @@ class LinearRegression:
         else: 
             self._fit_gd(X, y, lam, eta, epochs)
  
-
-
             
     def _fit_cf(self, X, y, lam = 0):
         ''' Compute the weight vector using the clsoed-form method.
@@ -50,15 +48,14 @@ class LinearRegression:
             X: n x d matrix, n samples, each has d features, excluding the bias feature
             y: n x 1 matrix of labels. Each element is the label of each sample. 
         '''
-
-        ## delete the `pass` statement below.
-        ## enter your code here that implements the closed-form method for
-        ## linear regression 
-        pass
-                
-
-
-    
+        _, d = X.shape
+        
+        self._init_w_vector_if_no_exist(d)
+        
+        X_bias = self._add_bias_column(X)
+        
+        self.w = np.linalg.pinv(X_bias.T @ X_bias) @ X_bias.T @ y
+        
     
     def _fit_gd(self, X, y, lam = 0, eta = 0.01, epochs = 1000):
         ''' Compute the weight vector using the gradient desecent based method.
@@ -75,26 +72,21 @@ class LinearRegression:
         pass
 
   
-
-    
     def predict(self, X):
         ''' parameter:
                 X: n x d matrix, the n samples, each has d features, excluding the bias feature
             return:
                 n x 1 matrix, each matrix element is the regression value of each sample
         '''
-
-        ## delete the `pass` statement below.
+        _, d = X.shape
         
-        ## enter your code here that produces the label vector for the given samples saved
-        ## in the matrix X. Make sure your predication is calculated at the same Z
-        ## space where you trained your model. 
-
-        pass
+        self._init_w_vector_if_no_exist(d)
+        
+        X_bias = self._add_bias_column(X)
+        
+        return X_bias @ self.w
         
 
-    
-    
     def error(self, X, y):
         ''' parameters:
                 X: n x d matrix of future samples
@@ -102,12 +94,32 @@ class LinearRegression:
             return: 
                 the MSE for this test set (X,y) using the trained model
         '''
+        y_hat = self.predict(X)
 
-        ## delete the `pass` statement below.
-        ## enter your code here that calculates the MSE between your predicted
-        ## label vector and the given label vector y, for the sample set saved in matraix x
-        ## Make sure your predication is calculated at the same Z space where you trained your model. 
+        squared_error = (y_hat - y)**2
 
-        pass
+        return np.mean(squared_error, axis=1)
 
-
+    
+    def _init_w_vector_if_no_exist(self, d):
+        ''' parameters:
+                d: scalar, representing number of features (EXCLUDING BIAS)
+                
+                if self.w does not exist, it is initialized
+        '''
+        if self.w is None:
+            self.w = np.zeros((d + 1, 1))
+       
+    
+    def _add_bias_column(self, X):
+        ''' parameters:
+                X: n x d matrix of future samples
+                
+            return: 
+                X: n x (d+1) matrix, with added bias column
+        '''
+        n, _ = X.shape
+        
+        bias = np.ones((n, 1))
+        
+        return np.append(X, bias, axis=1)
