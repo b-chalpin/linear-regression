@@ -46,11 +46,11 @@ class LinearRegression:
             X: n x d matrix, n samples, each has d features, excluding the bias feature
             y: n x 1 matrix of labels. Each element is the label of each sample.
         """
-        _, d = X.shape
+        X_bias = self._add_bias_column(X)
+
+        _, d = X_bias.shape
 
         self._init_w_vector_if_no_exist(d)
-
-        X_bias = self._add_bias_column(X)
 
         self.w = np.linalg.pinv(X_bias.T @ X_bias) @ X_bias.T @ y
 
@@ -61,12 +61,34 @@ class LinearRegression:
             X: n x d matrix, n samples, each has d features, excluding the bias feature
             y: n x 1 matrix of labels. Each element is the label of each sample.
         """
+        X_bias = self._add_bias_column(X)
 
-        ## delete the `pass` statement below.
-        ## enter your code here that implements the gradient descent based method
-        ## for linear regression 
+        n, d = X_bias.shape
 
-        pass
+        self._init_w_vector_if_no_exist(d)
+
+        # we can calculate these outside of our training loop since they are independent from self.w
+        w_coefficient = np.eye(d) - (2 * eta / n) * X_bias.T @ X_bias
+        w_intercept = (2 * eta / n) * X_bias.T @ y
+
+        prev_epoch_error = math.inf
+
+        while epochs >= 0:
+            self.w = w_coefficient @ self.w + w_intercept
+
+            next_epoch_error = self.error(X_bias[:, 1:], y)  # remove bias vector from X_bias
+
+            # Repeat the following until the decrease of the value of E(w) at a round
+            # becomes too small, or we have finished a certain number of epochs, or
+            # ∇E(w) becomes nearly 0.
+            if next_epoch_error == 0.0 or next_epoch_error >= prev_epoch_error:  # TODO: revise this condition
+                break
+
+            prev_epoch_error = next_epoch_error
+
+            epochs -= 1
+
+        print(f"Only required {epochs} epochs.")
 
     def predict(self, X):
         """ parameter:
@@ -74,11 +96,11 @@ class LinearRegression:
             return:
                 n x 1 matrix, each matrix element is the regression value of each sample
         """
-        _, d = X.shape
+        X_bias = self._add_bias_column(X)
+
+        _, d = X_bias.shape
 
         self._init_w_vector_if_no_exist(d)
-
-        X_bias = self._add_bias_column(X)
 
         return X_bias @ self.w
 
@@ -95,12 +117,12 @@ class LinearRegression:
 
     def _init_w_vector_if_no_exist(self, d):
         """ parameters:
-                d: scalar, representing number of features (EXCLUDING BIAS)
+                d: scalar, representing number of features in our samples
 
                 if self.w does not exist, it is initialized
         """
         if self.w is None:
-            self.w = np.zeros((d + 1, 1))
+            self.w = np.zeros((d, 1))
 
     def _add_bias_column(self, X):
         """ parameters:
@@ -109,8 +131,4 @@ class LinearRegression:
             return:
                 X: n x (d+1) matrix, with added bias column
         """
-        n, _ = X.shape
-
-        bias = np.ones((n, 1))
-
-        return np.append(X, bias, axis=1)
+        return np.insert(X, 0, 1, axis=1)

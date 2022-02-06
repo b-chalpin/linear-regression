@@ -13,7 +13,7 @@ y_test = pd.read_csv(os.path.join(data_path, "y_test.csv")).to_numpy()
 
 lr = LinearRegression()
 
-lr.fit(X=X_train, y=y_train)
+lr.fit(X=X_train, y=y_train, eta=0.01, CF=False, epochs=1000)
 
 y_hat = lr.predict(X=X_test)
 mse = lr.error(X=X_test, y=y_test)
