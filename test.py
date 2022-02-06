@@ -6,10 +6,10 @@ import os
 
 data_path = "./prog4/code_linear_regression/houseprice"
 
-X_train = pd.read_csv(os.path.join(data_path, "x_train.csv"))
-X_test = pd.read_csv(os.path.join(data_path, "x_test.csv"))
-y_train = pd.read_csv(os.path.join(data_path, "y_train.csv"))
-y_test = pd.read_csv(os.path.join(data_path, "y_test.csv"))
+X_train = pd.read_csv(os.path.join(data_path, "x_train.csv")).to_numpy()
+X_test = pd.read_csv(os.path.join(data_path, "x_test.csv")).to_numpy()
+y_train = pd.read_csv(os.path.join(data_path, "y_train.csv")).to_numpy()
+y_test = pd.read_csv(os.path.join(data_path, "y_test.csv")).to_numpy()
 
 lr = LinearRegression()
 
