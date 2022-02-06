@@ -49,7 +49,6 @@ class LinearRegression:
         X_bias = self._add_bias_column(X)
 
         _, d = X_bias.shape
-
         self._init_w_vector_if_no_exist(d)
 
         self.w = np.linalg.pinv(X_bias.T @ X_bias) @ X_bias.T @ y
@@ -76,7 +75,7 @@ class LinearRegression:
         while epochs >= 0:
             self.w = w_coefficient @ self.w + w_intercept
 
-            next_epoch_error = self.error(X_bias[:, 1:], y)  # remove bias vector from X_bias
+            next_epoch_error = self._error_z(X_bias, y)
 
             # Repeat the following until the decrease of the value of E(w) at a round
             # becomes too small, or we have finished a certain number of epochs, or
@@ -96,13 +95,12 @@ class LinearRegression:
             return:
                 n x 1 matrix, each matrix element is the regression value of each sample
         """
-        X_bias = self._add_bias_column(X)
+        Z = MyUtils.z_transform(X, degree=self.degree)  # Z-transform to match self.w dimension
+        Z_bias = self._add_bias_column(Z)
 
-        _, d = X_bias.shape
+        _, d = Z_bias.shape
 
-        self._init_w_vector_if_no_exist(d)
-
-        return X_bias @ self.w
+        return Z_bias @ self.w  # it is assumed that self.w is already trained
 
     def error(self, X, y):
         """ parameters:
@@ -113,13 +111,29 @@ class LinearRegression:
         """
         y_hat = self.predict(X)
 
-        return np.square(np.subtract(y_hat, y)).mean()
+        return self._calculate_mse(y_hat, y)
+
+    ### PRIVATE HELPER METHODS ###
+
+    def _error_z(self, Z, y):
+        """ An internal helper method to calculate MSE for already
+            Z-tranformed samples
+
+            parameters:
+                Z: n x d matrix of Z-transformed samples (INCLUDING BIAS)
+                y: n x 1 matrix of labels
+            return:
+                the MSE for this test set (Z,y) using the trained model
+        """
+        y_hat = Z @ self.w
+
+        return self._calculate_mse(y_hat, y)
 
     def _init_w_vector_if_no_exist(self, d):
-        """ parameters:
-                d: scalar, representing number of features in our samples
+        """ If self.w does not exist, it is initialized
 
-                if self.w does not exist, it is initialized
+            parameters:
+                d: scalar, representing number of features in our Z-tranformed samples
         """
         if self.w is None:
             self.w = np.zeros((d, 1))
@@ -132,3 +146,13 @@ class LinearRegression:
                 X: n x (d+1) matrix, with added bias column
         """
         return np.insert(X, 0, 1, axis=1)
+
+    def _calculate_mse(self, y_hat, y):
+        """ parameters:
+                y_hat: n x 1 vector, predicted labels for samples
+                y: n x 1 vector, true labels for samples
+
+            return:
+                MSE between the predicted labels and true labels
+        """
+        return np.square(np.subtract(y_hat, y)).mean()
