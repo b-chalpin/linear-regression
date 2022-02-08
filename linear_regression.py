@@ -74,14 +74,7 @@ class LinearRegression:
 
             next_epoch_error = self._error_z(X_bias, y)
 
-            # Repeat the following until the decrease of the value of E(w) at a round
-            # becomes too small, or we have finished a certain number of epochs, or
-            # ∇E(w) becomes nearly 0.
-            if next_epoch_error == 0.0 or next_epoch_error >= prev_epoch_error:  # TODO: revise this condition
-                break
-
             prev_epoch_error = next_epoch_error
-
             epochs -= 1
 
     def predict(self, X):
