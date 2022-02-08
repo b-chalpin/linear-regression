@@ -47,9 +47,8 @@ class LinearRegression:
             y: n x 1 matrix of labels. Each element is the label of each sample.
         """
         X_bias = self._add_bias_column(X)
-
         _, d = X_bias.shape
-        self._init_w_vector_if_no_exist(d)
+        self._init_w_vector(d)
 
         self.w = np.linalg.pinv(X_bias.T @ X_bias) @ X_bias.T @ y
 
@@ -61,14 +60,12 @@ class LinearRegression:
             y: n x 1 matrix of labels. Each element is the label of each sample.
         """
         X_bias = self._add_bias_column(X)
-
         n, d = X_bias.shape
-
-        self._init_w_vector_if_no_exist(d)
+        self._init_w_vector(d)
 
         # we can calculate these outside of our training loop since they are independent from self.w
-        w_coefficient = np.eye(d) - (2 * eta / n) * X_bias.T @ X_bias
-        w_intercept = (2 * eta / n) * X_bias.T @ y
+        w_coefficient = np.eye(d) - (2 * eta / n) * (X_bias.T @ X_bias)
+        w_intercept = (2 * eta / n) * (X_bias.T @ y)
 
         prev_epoch_error = math.inf
 
@@ -87,8 +84,6 @@ class LinearRegression:
 
             epochs -= 1
 
-        print(f"Only required {epochs} epochs.")
-
     def predict(self, X):
         """ parameter:
                 X: n x d matrix, the n samples, each has d features, excluding the bias feature
@@ -97,8 +92,6 @@ class LinearRegression:
         """
         Z = MyUtils.z_transform(X, degree=self.degree)  # Z-transform to match self.w dimension
         Z_bias = self._add_bias_column(Z)
-
-        _, d = Z_bias.shape
 
         return Z_bias @ self.w  # it is assumed that self.w is already trained
 
@@ -129,14 +122,13 @@ class LinearRegression:
 
         return self._calculate_mse(y_hat, y)
 
-    def _init_w_vector_if_no_exist(self, d):
+    def _init_w_vector(self, d):
         """ If self.w does not exist, it is initialized
 
             parameters:
                 d: scalar, representing number of features in our Z-tranformed samples
         """
-        if self.w is None:
-            self.w = np.zeros((d, 1))
+        self.w = np.zeros((d, 1))
 
     def _add_bias_column(self, X):
         """ parameters:

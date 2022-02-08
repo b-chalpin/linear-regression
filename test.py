@@ -2,6 +2,7 @@ from email import header
 import numpy as np
 import matplotlib.pyplot as plt
 from linear_regression import LinearRegression
+from misc
 import pandas as pd
 import os
 
@@ -14,40 +15,32 @@ y_test = pd.read_csv(os.path.join(data_path, "y_test.csv")).to_numpy()
 
 lr = LinearRegression()
 
-# set this parameter
+# configure hyperparameters
 max_degree = 4
+gd = True
+# lam = 1
+epochs = 1000
+eta = 0.01
 
-degree_x = []
-mse_y = []
-prediction_y = []
+degree_x = [] # store each degree
+mse_val_y = [] # store the validation error for each degree
+mse_train_y = [] # store the training error for each degree
+prediction_y = [] # store the predictions for each degree
 
 for r in range(1, max_degree + 1):  # 1-based indexing
-    lr.fit(X=X_train, y=y_train, CF=True, degree=r)
+    if gd: 
+        lr.fit(X=X_train, y=y_train, CF=False, epochs=epochs, eta=eta, degree=r)
+    else:
+        lr.fit(X=X_train, y=y_train, CF=True, degree=r)
 
-    mse = lr.error(X=X_test, y=y_test)
-    print(f"MSE for degree {r}: {mse}")
+    validaiton_mse = lr.error(X=X_test, y=y_test)
+    training_mse = lr.error(X=X_train, y=y_train)
+    
+    print(f"MSE for degree {r}:\nTest: {validaiton_mse}\nTrain: {training_mse}\n")
 
     y_hat = lr.predict(X=X_test)
 
     degree_x.append(r)
-    mse_y.append(mse)
-    prediction_y.append((r, y_hat))   # store degree and prediction
-
-# plot to examine the true y vs. predicted y for each degree
-fig, axes = plt.subplots(len(prediction_y))
-
-# x-vals for fig2 subplots
-fig2_x = np.arange(y_test.shape[0])
-
-for i, (degree, prediction) in enumerate(prediction_y):
-    ax_pred = axes[i]
-
-    ax_pred.set_title(f"Degree: {degree}")
-    ax_pred.set_ylabel("House price (y)")
-
-    # plot truth and prediction
-    ax_pred.plot(fig2_x, y_test.flatten())
-    ax_pred.plot(fig2_x, prediction.flatten())
-    ax_pred.legend(["truth", "prediction"])
-
-plt.show()
+    mse_val_y.append(validaiton_mse)
+    mse_train_y.append(training_mse)
+    prediction_y.append(y_hat) 
