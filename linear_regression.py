@@ -21,7 +21,6 @@ class LinearRegression:
 
     def fit(self, X, y, CF=True, lam=0, eta=0.01, epochs=1000, degree=1):
         """ Find the fitting weight vector and save it in self.w.
-
             parameters:
                 X: n x d matrix of samples, n samples, each has d features, excluding the bias feature
                 y: n x 1 matrix of lables
@@ -42,7 +41,6 @@ class LinearRegression:
     def _fit_cf(self, X, y, lam=0):
         """ Compute the weight vector using the clsoed-form method.
             Save the result in self.w
-
             X: n x d matrix, n samples, each has d features, excluding the bias feature
             y: n x 1 matrix of labels. Each element is the label of each sample.
         """
@@ -55,7 +53,6 @@ class LinearRegression:
     def _fit_gd(self, X, y, lam=0, eta=0.01, epochs=1000):
         """ Compute the weight vector using the gradient desecent based method.
             Save the result in self.w
-
             X: n x d matrix, n samples, each has d features, excluding the bias feature
             y: n x 1 matrix of labels. Each element is the label of each sample.
         """
@@ -73,9 +70,52 @@ class LinearRegression:
             self.w = w_coefficient @ self.w + w_intercept
 
             next_epoch_error = self._error_z(X_bias, y)
+            
+            prev_epoch_error = next_epoch_error
+            epochs -= 1
+            
+    def fit_metrics(self, X, y, X_test, y_test, lam=0, eta=0.01, epochs=1000, degree=1):
+        """ A method used for model performance analysis purposes. Internal use only.
+            parameters:
+                X: n x d matrix of samples, n samples, each has d features, excluding the bias feature
+                y: n x 1 matrix of lables
+                X_test: n x d matrix of validation samples
+                lam: the ridge regression parameter for regularization
+                eta: the learning rate used in gradient descent
+                epochs: the maximum epochs used in gradient descent
+                degree: the degree of the Z-space
+            returns:
+                train_mse: epochs x 1 array of training MSE values
+                test_mse: epochs x 1 array of validation MSE values
+        """
+        self.degree = degree
+        X = MyUtils.z_transform(X, degree=self.degree)
+        
+        train_mse = []
+        test_mse = []
+        
+        X_bias = self._add_bias_column(X)
+        n, d = X_bias.shape
+        self._init_w_vector(d)
+
+        # we can calculate these outside of our training loop since they are independent from self.w
+        w_coefficient = np.eye(d) - (2 * eta / n) * (X_bias.T @ X_bias)
+        w_intercept = (2 * eta / n) * (X_bias.T @ y)
+
+        prev_epoch_error = math.inf
+
+        while epochs >= 0:
+            self.w = w_coefficient @ self.w + w_intercept
+
+            next_epoch_error = self._error_z(X_bias, y)
+            
+            train_mse.append(next_epoch_error)
+            test_mse.append(self.error(X_test, y_test))
 
             prev_epoch_error = next_epoch_error
             epochs -= 1
+            
+        return (train_mse, test_mse)
 
     def predict(self, X):
         """ parameter:
@@ -99,12 +139,9 @@ class LinearRegression:
 
         return self._calculate_mse(y_hat, y)
 
-    ### PRIVATE HELPER METHODS ###
-
     def _error_z(self, Z, y):
         """ An internal helper method to calculate MSE for already
             Z-tranformed samples
-
             parameters:
                 Z: n x d matrix of Z-transformed samples (INCLUDING BIAS)
                 y: n x 1 matrix of labels
@@ -117,7 +154,6 @@ class LinearRegression:
 
     def _init_w_vector(self, d):
         """ If self.w does not exist, it is initialized
-
             parameters:
                 d: scalar, representing number of features in our Z-tranformed samples
         """
@@ -126,7 +162,6 @@ class LinearRegression:
     def _add_bias_column(self, X):
         """ parameters:
                 X: n x d matrix of future samples
-
             return:
                 X: n x (d+1) matrix, with added bias column
         """
@@ -136,7 +171,6 @@ class LinearRegression:
         """ parameters:
                 y_hat: n x 1 vector, predicted labels for samples
                 y: n x 1 vector, true labels for samples
-
             return:
                 MSE between the predicted labels and true labels
         """
