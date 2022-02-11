@@ -11,7 +11,7 @@ from code_linear_regression.linear_regression import LinearRegression
 
 # training config
 max_degree = 3
-training_epochs = 5000
+training_epochs = 1000
 eta_list = [0.01, 0.001, 0.0001]
 lam_list = [200, 100, 0]
 
