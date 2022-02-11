@@ -5,9 +5,12 @@
 # It supports the closed-form method and the gradient-desecent based method. 
 
 
+import sys
 import numpy as np
 import math
-import sys
+
+# for debug
+from alive_progress import alive_bar
 
 sys.path.append("..")
 
@@ -48,7 +51,7 @@ class LinearRegression:
         _, d = X_bias.shape
         self._init_w_vector(d)
 
-        self.w = np.linalg.pinv(X_bias.T @ X_bias) @ X_bias.T @ y
+        self.w = np.linalg.pinv(X_bias.T @ X_bias + lam * np.eye(d)) @ X_bias.T @ y
 
     def _fit_gd(self, X, y, lam=0, eta=0.01, epochs=1000):
         """ Compute the weight vector using the gradient desecent based method.
@@ -61,12 +64,12 @@ class LinearRegression:
         self._init_w_vector(d)
 
         # we can calculate these outside of our training loop since they are independent from self.w
-        w_coefficient = np.eye(d) - (2 * eta / n) * (X_bias.T @ X_bias)
+        w_coefficient = np.eye(d) - (2 * eta / n) * (X_bias.T @ X_bias + lam * np.eye(d))
         w_intercept = (2 * eta / n) * (X_bias.T @ y)
 
         prev_epoch_error = math.inf
 
-        while epochs >= 0:
+        while epochs > 0:
             self.w = w_coefficient @ self.w + w_intercept
 
             next_epoch_error = self._error_z(X_bias, y)
@@ -88,6 +91,8 @@ class LinearRegression:
                 train_mse: epochs x 1 array of training MSE values
                 test_mse: epochs x 1 array of validation MSE values
         """
+        total_epochs = epochs
+        
         self.degree = degree
         X = MyUtils.z_transform(X, degree=self.degree)
         
@@ -99,21 +104,27 @@ class LinearRegression:
         self._init_w_vector(d)
 
         # we can calculate these outside of our training loop since they are independent from self.w
-        w_coefficient = np.eye(d) - (2 * eta / n) * (X_bias.T @ X_bias)
+        w_coefficient = np.eye(d) - (2 * eta / n) * (X_bias.T @ X_bias + lam * np.eye(d))
         w_intercept = (2 * eta / n) * (X_bias.T @ y)
 
         prev_epoch_error = math.inf
-
-        while epochs >= 0:
-            self.w = w_coefficient @ self.w + w_intercept
-
-            next_epoch_error = self._error_z(X_bias, y)
+        
+        # create progress bar
+        with alive_bar(total_epochs, title=f'\t\t\t\t') as bar:
             
-            train_mse.append(next_epoch_error)
-            test_mse.append(self.error(X_test, y_test))
+            while epochs > 0:
+                self.w = w_coefficient @ self.w + w_intercept
 
-            prev_epoch_error = next_epoch_error
-            epochs -= 1
+                next_epoch_error = self._error_z(X_bias, y)
+
+                train_mse.append(next_epoch_error)
+                test_mse.append(self.error(X_test, y_test))
+
+                prev_epoch_error = next_epoch_error
+                epochs -= 1
+                
+                # progress bar
+                bar()
             
         return (train_mse, test_mse)
 
