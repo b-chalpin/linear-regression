@@ -1,4 +1,4 @@
-##### >>>>>> Please put your name and 6-digit EWUID here
+########## Blake Chalpin 00864973
 
 
 # Various tools for data manipulation. 

@@ -5,17 +5,16 @@
 # It supports the closed-form method and the gradient-desecent based method. 
 
 
+
 import sys
 import numpy as np
 import math
 
-# for debug
-from alive_progress import alive_bar
-
 sys.path.append("..")
-
 from misc.utils import MyUtils
 
+# import for progress bar
+from alive_progress import alive_bar
 
 class LinearRegression:
     def __init__(self):
@@ -67,14 +66,8 @@ class LinearRegression:
         w_coefficient = np.eye(d) - (2 * eta / n) * (X_bias.T @ X_bias + lam * np.eye(d))
         w_intercept = (2 * eta / n) * (X_bias.T @ y)
 
-        prev_epoch_error = math.inf
-
         while epochs > 0:
             self.w = w_coefficient @ self.w + w_intercept
-
-            next_epoch_error = self._error_z(X_bias, y)
-            
-            prev_epoch_error = next_epoch_error
             epochs -= 1
             
     def fit_metrics(self, X, y, X_test, y_test, lam=0, eta=0.01, epochs=1000, degree=1):
@@ -91,11 +84,13 @@ class LinearRegression:
                 train_mse: epochs x 1 array of training MSE values
                 test_mse: epochs x 1 array of validation MSE values
         """
+        # progress bar will use this as its upper bound
         total_epochs = epochs
         
         self.degree = degree
         X = MyUtils.z_transform(X, degree=self.degree)
         
+        # training metrics to return
         train_mse = []
         test_mse = []
         
@@ -107,8 +102,6 @@ class LinearRegression:
         w_coefficient = np.eye(d) - (2 * eta / n) * (X_bias.T @ X_bias + lam * np.eye(d))
         w_intercept = (2 * eta / n) * (X_bias.T @ y)
 
-        prev_epoch_error = math.inf
-        
         # create progress bar
         with alive_bar(total_epochs, title=f'\t\t\t\t') as bar:
             
@@ -120,10 +113,9 @@ class LinearRegression:
                 train_mse.append(next_epoch_error)
                 test_mse.append(self.error(X_test, y_test))
 
-                prev_epoch_error = next_epoch_error
                 epochs -= 1
                 
-                # progress bar
+                # increment progress bar
                 bar()
             
         return (train_mse, test_mse)
