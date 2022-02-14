@@ -70,7 +70,7 @@ class LinearRegression:
             self.w = w_coefficient @ self.w + w_intercept
             epochs -= 1
             
-    def fit_metrics(self, X, y, X_test, y_test, lam=0, eta=0.01, epochs=1000, degree=1):
+    def fit_metrics(self, X, y, X_test, y_test, lam=0, eta=0.01, epochs=1000, degree=1, epoch_step=100):
         """ A method used for model performance analysis purposes. Internal use only.
             parameters:
                 X: n x d matrix of samples, n samples, each has d features, excluding the bias feature
@@ -108,10 +108,9 @@ class LinearRegression:
             while epochs > 0:
                 self.w = w_coefficient @ self.w + w_intercept
 
-                next_epoch_error = self._error_z(X_bias, y)
-
-                train_mse.append(next_epoch_error)
-                test_mse.append(self.error(X_test, y_test))
+                if epochs % epoch_step == 0:
+                    train_mse.append(self._error_z(X_bias, y))
+                    test_mse.append(self.error(X_test, y_test))
 
                 epochs -= 1
                 
