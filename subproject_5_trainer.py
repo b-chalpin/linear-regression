@@ -19,11 +19,11 @@ def notify_user(notify_when_done=False):
 
         
 # training config
-max_degree = 1
-training_epochs = 1_000_000
+max_degree = 4
+training_epochs = 100_000
 epoch_step = 1000
 eta_list = [0.01, 0.001, 0.0001]
-lam_list = [200, 100, 0]
+lam_list = [0.01, 0.001, 0]
 notify_when_done = False # option to notify user with audio when training is done
 
 # toggles for train/not train GD and CF

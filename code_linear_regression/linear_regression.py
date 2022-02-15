@@ -13,9 +13,6 @@ import math
 sys.path.append("..")
 from misc.utils import MyUtils
 
-# import for progress bar
-from alive_progress import alive_bar
-
 class LinearRegression:
     def __init__(self):
         self.w = None  # The (d+1) x 1 numpy array weight matrix
@@ -70,54 +67,58 @@ class LinearRegression:
             self.w = w_coefficient @ self.w + w_intercept
             epochs -= 1
             
-    def fit_metrics(self, X, y, X_test, y_test, lam=0, eta=0.01, epochs=1000, degree=1, epoch_step=100):
-        """ A method used for model performance analysis purposes. Internal use only.
-            parameters:
-                X: n x d matrix of samples, n samples, each has d features, excluding the bias feature
-                y: n x 1 matrix of lables
-                X_test: n x d matrix of validation samples
-                lam: the ridge regression parameter for regularization
-                eta: the learning rate used in gradient descent
-                epochs: the maximum epochs used in gradient descent
-                degree: the degree of the Z-space
-            returns:
-                train_mse: epochs x 1 array of training MSE values
-                test_mse: epochs x 1 array of validation MSE values
-        """
-        # progress bar will use this as its upper bound
-        total_epochs = epochs
+#     # helper method used for subproject-5 only. NOTE: pip package alive-progress MUST be installed
+#     def fit_metrics(self, X, y, X_test, y_test, lam=0, eta=0.01, epochs=1000, degree=1, epoch_step=100):
+#         """ A method used for model performance analysis purposes. Internal use only.
+#             parameters:
+#                 X: n x d matrix of samples, n samples, each has d features, excluding the bias feature
+#                 y: n x 1 matrix of lables
+#                 X_test: n x d matrix of validation samples
+#                 lam: the ridge regression parameter for regularization
+#                 eta: the learning rate used in gradient descent
+#                 epochs: the maximum epochs used in gradient descent
+#                 degree: the degree of the Z-space
+#             returns:
+#                 train_mse: epochs x 1 array of training MSE values
+#                 test_mse: epochs x 1 array of validation MSE values
+#         """
+#         # import for progress bar
+#         from alive_progress import alive_bar
         
-        self.degree = degree
-        X = MyUtils.z_transform(X, degree=self.degree)
+#         # progress bar will use this as its upper bound
+#         total_epochs = epochs
         
-        # training metrics to return
-        train_mse = []
-        test_mse = []
+#         self.degree = degree
+#         X = MyUtils.z_transform(X, degree=self.degree)
         
-        X_bias = self._add_bias_column(X)
-        n, d = X_bias.shape
-        self._init_w_vector(d)
+#         # training metrics to return
+#         train_mse = []
+#         test_mse = []
+        
+#         X_bias = self._add_bias_column(X)
+#         n, d = X_bias.shape
+#         self._init_w_vector(d)
 
-        # we can calculate these outside of our training loop since they are independent from self.w
-        w_coefficient = np.eye(d) - (2 * eta / n) * (X_bias.T @ X_bias + lam * np.eye(d))
-        w_intercept = (2 * eta / n) * (X_bias.T @ y)
+#         # we can calculate these outside of our training loop since they are independent from self.w
+#         w_coefficient = np.eye(d) - (2 * eta / n) * (X_bias.T @ X_bias + lam * np.eye(d))
+#         w_intercept = (2 * eta / n) * (X_bias.T @ y)
 
-        # create progress bar
-        with alive_bar(total_epochs, title=f'\t\t\t\t') as bar:
+#         # create progress bar
+#         with alive_bar(total_epochs, title=f'\t\t\t\t') as bar:
             
-            while epochs > 0:
-                self.w = w_coefficient @ self.w + w_intercept
+#             while epochs > 0:
+#                 self.w = w_coefficient @ self.w + w_intercept
 
-                if epochs % epoch_step == 0:
-                    train_mse.append(self._error_z(X_bias, y))
-                    test_mse.append(self.error(X_test, y_test))
+#                 if epochs % epoch_step == 0:
+#                     train_mse.append(self._error_z(X_bias, y))
+#                     test_mse.append(self.error(X_test, y_test))
 
-                epochs -= 1
+#                 epochs -= 1
                 
-                # increment progress bar
-                bar()
+#                 # increment progress bar
+#                 bar()
             
-        return (train_mse, test_mse)
+#         return (train_mse, test_mse)
 
     def predict(self, X):
         """ parameter:
