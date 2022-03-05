@@ -1,10 +1,5 @@
-########## Blake Chalpin 00864973
-
-
 # Implementation of the linear regression with L2 regularization.
 # It supports the closed-form method and the gradient-desecent based method. 
-
-
 
 import sys
 import numpy as np
